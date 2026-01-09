@@ -1,8 +1,33 @@
 import Image from "next/image";
+import mysql from "mysql2/promise";
+
+const connection = await mysql.createConnection({
+  host:"localhost",
+  user: "root",
+  password:"root",
+  database:"gym",
+});
+
+async function query_output() {
+  let query_output
+  try {
+    query_output = await connection.execute("SELECT * FROM user");
+    console.log(query_output);
+  } catch (error) {
+    console.log(error);
+  }
+  return JSON.stringify(query_output);
+}
+
+
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div>
+      {query_output()}
+    </div>
+
+    /*<div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <Image
           className="dark:invert"
@@ -60,6 +85,6 @@ export default function Home() {
           </a>
         </div>
       </main>
-    </div>
+    </div>*/
   );
 }
