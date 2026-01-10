@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Gym App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="login-view">
+            <h2>Gym Login</h2>
+            <form id="login-form">
+                <label>Email</label>
+                <input type="email" id="login-email" placeholder="Enter email:" required>
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="Enter password:" required>
+
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+
+        <div id="signup-view">
+            <h2>Gym Sign-up</h2>
+            <form id="signup-form">
+                <label>First Name</label>
+                <input type="text" id="first-name" placeholder="Enter your first name:" required>
+                <label>Last Name</label>
+                <input type="text" id="last-name" placeholder="Enter your last name:" required>
+                <label>Email</label>
+                <input type="email" id="signup-email" placeholder="Enter email:" required>
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="Enter password:" required>
+                <label>Phone (format: 123-123-1234)</label>
+                <input type="tel"
+                    id="phone"
+                    name="phone"
+                    pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                    required />
+                <label>Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+                <label>Date of Birth</label>
+                <input type="date" id="date_of_birth"/>
+
+                <label>Select Role</label>
+                <select id="role-select">
+                    <option value="athlete">Athlete</option>
+                    <option value="trainer">Trainer</option>
+                    <option value="medical">Medical User</option>
+                </select>
+
+                <div id="athlete-fields" class="role-fields" style="display:none;">
+                    <label>Sports Branch</label>
+                    <input type="text" id="sports-branch" placeholder="e.g. Basketball">
+                </div>
+
+                <div id="trainer-fields" class="role-fields" style="display:none;">
+                    <label>Specialization</label>
+                    <input type="text" id="specialization" placeholder="e.g. Strength Training">
+
+                    <label>Years of Experience</label>
+                    <input type="number" id="trainer-experience" min="0">
+                </div>
+
+                <div id="medical-fields" class="role-fields" style="display:none;">
+                    <label>Profession</label>
+                    <input type="text" id="profession" placeholder="e.g. Physiotherapist">
+
+                    <label>Specialization Area</label>
+                    <input type="text" id="specialization-area">
+                </div>
+                
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+
+        <div id="dashboard-view" class="hidden">
+            <div style="overflow: hidden; margin-bottom: 20px;">
+                <h2 style="float:left; margin:0;">Dashboard</h2>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+
+            <div class="nav-tabs" id="nav-menu">
+                </div>
+
+            <div id="content-training" class="tab-content hidden">
+                <h3>Training Progress</h3>
+                <label>Athlete</label>
+                <select id="athlete-select">
+                    <option value="">Select an athlete</option>
+                </select>
+
+                <label>Body Measurements</label>
+                <div class="table-container">
+                    <table border="1" id="measurementTable">
+                    <thead>
+                        <tr>
+                        <th>Date</th>
+                        <th>Height</th>
+                        <th>Weight</th>
+                        <th>Body Fat %</th>
+                        <th>Muscle Mass</th>
+                        <th>BMI</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+                <br/>
+                <label>Medical Assessment</label>
+                <div class="table-container">
+                <table border="1" id="medicalAssessment">
+                <thead>
+                    <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                    <th>Clearance</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+                </div>
+                <br/>
+                <label>Top 3 Exercises</label>
+                <div class="table-container">
+                <table border="1" id="top_three_exercises">
+                <thead>
+                    <tr>
+                    <th>Ranking</th>
+                    <th>Exercise</th>
+                    <th>Total Volume (Set * Rep * Weight)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+                </div>
+                <br/>
+                <label>Last Training Info</label>
+                <div class="table-container">
+                <table border="1" id="lastTraining">
+                <thead>
+                    <tr>
+                    <th>Exercise</th>
+                    <th>Weight Used</th>
+                    <th>Sets</th>
+                    <th>Reps</th>
+                    <th>Perceived Exertion</th>
+                    <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+                </div>
+                <br/>
+                <label>Session Adherence</label>
+                <div class="table-container">
+                <table border="1" id="sessionAdherence">
+                <thead>
+                    <tr>
+                    <th>Set Completion (%)</th>
+                    <th>Rep Completion (%)</th>
+                    <th>Average Perceived Exertion</th>
+                    <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+                </div>
+            </div>
+
+            <div id="content-management" class="tab-content hidden">
+                <h3>Training Program Management</h3>
+                <h4>Create New Program</h4>
+                
+                <label>Program Name</label>
+                <input id="training_program_name" type="text"/>
+
+                <label>Difficulty Level</label>
+                <select id="training_program_difficulty">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advenced</option>
+                </select>
+
+                <label>Goal</label><br/>
+                <textarea id="training_program_goal"></textarea>
+                <br/>
+
+                <label>Start Date</label>
+                <input type="date" id="training_program_start_date"/>
+
+                <label>End Date</label>
+                <input type="date" id="training_program_end_date">
+
+                <button>Create</button>
+            </div>
+
+            <div id="content-medical" class="tab-content hidden">
+                <h3>Medical Assessment</h3>
+                <label>Athlete</label>
+                <select id="athlete-select-medical">
+                    <option value="">Select an athlete</option>
+                </select>
+
+                <label>Body Measurements</label>
+                <div class="table-container">
+                    <table border="1" id="measurementTable-medical">
+                    <thead>
+                        <tr>
+                        <th>Date</th>
+                        <th>Height</th>
+                        <th>Weight</th>
+                        <th>Body Fat %</th>
+                        <th>Muscle Mass</th>
+                        <th>BMI</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+                <br/>
+                <label>Medical Assessment</label>
+                <div class="table-container">
+                <table border="1" id="medicalAssessment-medical">
+                <thead>
+                    <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                    <th>Clearance</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+                </div>
+                <br/>
+                <h3>New Medical Exam</h3>
+                <label>Assessment Type:</label>
+                <select id="assessment_type">
+                    <option value="Recovery Assessment">Recovery Assessment</option>
+                    <option value="Physical Examination">Physical Examination</option>
+                    <option value="Nutritional Consultation">Nutritional Consultation</option>
+                    <option value="Injury Assessment">Injury Assessment</option>
+                    <option value="Clearance Check">Clearance Check</option>
+                </select>
+                <label for="medical_exam_notes">Examination Notes</label>
+                <br/>
+                <textarea id="medical_exam_notes"></textarea>
+                <br/>
+                <label>Clearance Status</label>
+                <select id="clearance_status">
+                    <option value="cleared">Cleared</option>
+                    <option value="not_cleared">Not Cleared</option>
+                    <option value="restricted">Restricted</option>
+                </select>
+                <button onclick="submitMedicalExam()">Submit Examination</button>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
+.container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+
+.hidden { display: none !important; }
+label { font-weight: bold; }
+
+.nav-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+.tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; }
+.tab-btn:hover { color: #333; }
+.tab-btn.active { border-bottom: 3px solid #007bff; color: #007bff; }
+
+input, select, button { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; }
+button { background: #007bff; color: white; border: none; cursor: pointer; }
+button:hover { background: #0056b3; }
+.logout-btn { background: #dc3545; width: auto; float: right; margin-bottom: 0; }
+.table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    }
+
+    thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
