@@ -11,7 +11,7 @@ if (savedUser) {
     showDashboard(savedUser.role);
     toggleView('dashboard-view');
 } else {
-    toggleView('login-view');
+    toggleView('view-toggle-view');
 }
 
 function toggleView(view_id) {
@@ -58,13 +58,12 @@ loginForm.addEventListener('submit', async (e) => {
         );
 
         localStorage.setItem("user", JSON.stringify(user));
-
-        document.getElementById('signup-view').classList.add('hidden');
+        toggleView('view-toggle-view');
+        toggleView('login-view');
+        toggleView('dashboard-view');
         showDashboard(user.role);
-
-        console.log("User from backend:", user);
-        console.log("Role:", user.role);
-
+        //console.log("User from backend:", user);
+        //console.log("Role:", user.role);
 
     } catch (err) {
         window.alert("Login failed");
@@ -111,17 +110,11 @@ signupForm.addEventListener('submit', (e) => {
 
 function logout() {
     localStorage.removeItem('user');
-
-    document.getElementById('dashboard-view').classList.add('hidden');
-    document.getElementById('login-view').classList.remove('hidden');
-    document.getElementById('signup-view').classList.remove('hidden');
+    toggleView('dashboard-view');
+    toggleView('view-toggle-view');
 }
 
 function showDashboard(role) {
-    document.getElementById('login-view').classList.add('hidden');
-    document.getElementById('signup-view').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.remove('hidden');
-
     const navMenu = document.getElementById('nav-menu');
     navMenu.innerHTML = '';
 
@@ -172,8 +165,6 @@ async function switchTab(tabId) {
         .find(b => b.innerText === TABS.find(t => t.id === tabId).label);
     if (clickedBtn) clickedBtn.classList.add('active');  
 }
-
-        
 
 const roleSelect = document.getElementById("role-select");
 const roleFields = document.querySelectorAll(".role-fields");
