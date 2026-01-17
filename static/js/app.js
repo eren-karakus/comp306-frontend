@@ -9,12 +9,19 @@ const savedUser = JSON.parse(localStorage.getItem("user"));
 
 if (savedUser) {
     showDashboard(savedUser.role);
-    document.getElementById('signup-view').classList.add('hidden');
+    toggleView('dashboard-view');
 } else {
-    document.getElementById('login-view').classList.remove('hidden');
-    document.getElementById('signup-view').classList.remove('hidden');
-    document.getElementById('dashboard-view').classList.add('hidden');
-}       
+    toggleView('login-view');
+}
+
+function toggleView(view_id) {
+    const view = document.getElementById(view_id);
+    if (view.classList.contains('hidden')) {
+        view.classList.remove('hidden');
+    } else {
+        view.classList.add('hidden');
+    }
+}
 
 const loginForm = document.getElementById('login-form');
 

@@ -7,11 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
+
 <body>
 
     <div class="container">
         
-        <div id="login-view">
+        <div id="view-toggle-view">
+            <button type="button" onclick="toggleView('login-view')">Login</button>
+            <button type="button" onclick="toggleView('signup-view')">Sign Up</button>
+        </div>
+        
+        <div id="login-view" class="hidden">
             <h2>Gym Login</h2>
             <form id="login-form">
                 <label>Email</label>
@@ -23,7 +29,7 @@
             </form>
         </div>
 
-        <div id="signup-view">
+        <div id="signup-view" class="hidden">
             <h2>Gym Sign-up</h2>
             <form id="signup-form">
                 <label>First Name</label>
