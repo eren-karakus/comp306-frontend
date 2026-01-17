@@ -34,10 +34,10 @@ def format_value(val):
         return 'NULL'
     elif isinstance(val, str):
         return escape_string(val)
-    elif isinstance(val, date):
-        return f"'{val.strftime('%Y-%m-%d')}'"
     elif isinstance(val, datetime):
         return f"'{val.strftime('%Y-%m-%d %H:%M:%S')}'"
+    elif isinstance(val, date):
+        return f"'{val.strftime('%Y-%m-%d')}'"
     elif isinstance(val, timedelta):
         return f"'{val}'"
     else:
@@ -57,6 +57,15 @@ def write_insert(output_file, table, columns, values_list):
         else:
             output_file.write(";\n\n")
 
+def fake_business_datetime():
+    dt = fake.date_time_between(start_date="-6M", end_date="now")
+    
+    business_hour = random.randint(8, 16) 
+    minute = random.randint(0, 59)
+    second = random.randint(0, 59)
+    
+    return dt.replace(hour=business_hour, minute=minute, second=second)
+
 def generate_users(output_file, n):
     users = []
     
@@ -66,8 +75,8 @@ def generate_users(output_file, n):
         gender = random.choice(['male', 'female', 'other'])
         first_name = fake.first_name()
         last_name = fake.last_name()
-        date_of_birth = fake.date_of_birth(minimum_age=18, maximum_age=65)
-
+        date_of_birth = fake.date_time_between(start_date='-65y', end_date='-18y')
+        registration_datetime = fake_business_datetime()
         user = (
             i,
             first_name,
@@ -77,7 +86,7 @@ def generate_users(output_file, n):
             pw_hash,
             gender,
             date_of_birth,
-            fake.date_time_between(start_date='-2y', end_date='now'),
+            registration_datetime,
             random.choice(['active', 'inactive'])
         )
         users.append(user)
@@ -180,7 +189,6 @@ def generate_program_enrollments(output_file, athlete_ids, program_ids):
     
     write_insert(output_file, 'ProgramEnrollment', ['athlete_id', 'program_id', 'enrollment_date', 'completion_status'], enrollments)
 
-
 def generate_exercises(output_file, n):
     exercises_data = [
         ('Dips', 'Strength', 'Parallel Bars', 'medium'),
@@ -264,17 +272,20 @@ def generate_performance_logs(output_file, athlete_ids, session_exercises):
     se_dict = {}
     for se in session_exercises:
         session_id, exercise_id, planned_sets, planned_reps = se[0], se[1], se[2], se[3]
-        if session_id not in se_dict:
-            se_dict[session_id] = []
-        se_dict[session_id].append((exercise_id, planned_sets, planned_reps))
+        se_dict.setdefault(session_id, []).append((exercise_id, planned_sets, planned_reps))
     
+    candidates = []
+    for athlete_id in athlete_ids:
+        for session_id, exercises in se_dict.items():
+            for exercise_id, planned_sets, planned_reps in exercises:
+                candidates.append((athlete_id, session_id, exercise_id, planned_sets, planned_reps))
+
+    random.shuffle(candidates)
+    max_logs = min(500, len(athlete_ids) * 8, len(candidates))
+    selected_candidates = candidates[:max_logs]
+
     logs = []
-    for i in range(min(500, len(athlete_ids) * 8)):
-        athlete_id = random.choice(athlete_ids)
-        session_id = random.choice(list(se_dict.keys()))
-        exercise_data = random.choice(se_dict[session_id])
-        exercise_id, planned_sets, planned_reps = exercise_data
-        
+    for athlete_id, session_id, exercise_id, planned_sets, planned_reps in selected_candidates:
         log = (
             athlete_id,
             session_id,
@@ -283,10 +294,10 @@ def generate_performance_logs(output_file, athlete_ids, session_exercises):
             random.randint(max(1, planned_reps - 3), planned_reps + 2),
             round(random.uniform(10, 200), 2),
             random.randint(1, 10),
-            fake.date_time_between(start_date='-6M', end_date='now')
+            fake_business_datetime()
         )
         logs.append(log)
-    
+
     write_insert(output_file, 'PerformanceLog', ['athlete_id', 'session_id', 'exercise_id', 'completed_sets', 'completed_reps', 'weight_used', 'perceived_exertion', 'log_time'], logs)
 
 def generate_body_measurements(output_file, athlete_ids):
@@ -299,15 +310,20 @@ def generate_body_measurements(output_file, athlete_ids):
         muscle_mass = round(random.uniform(30, 70), 2)
         bmi = round(weight / ((height / 100) ** 2), 2)
         
+        seen_dates = set()
         for i in range(num_measurements):
-            date = fake.date_between(start_date='-1y', end_date='today')
+            measurement_date = fake.date_between(start_date='-1y', end_date='today')
+            while measurement_date in seen_dates:
+                measurement_date = fake.date_between(start_date='-1y', end_date='today')
+            seen_dates.add(measurement_date)
+
             height = round((height + random.uniform(-0.5, 0.5)), 2)
             weight = round((weight + random.uniform(-2, 2)), 2)
             body_fat = round((body_fat + random.uniform(-1, 1)), 2)
             muscle_mass = round((muscle_mass + random.uniform(-1, 1)), 2)
             bmi = round(weight / ((height / 100) ** 2), 2)
-            
-            measurements.append((athlete_id, date, height, weight, body_fat, muscle_mass, bmi))
+
+            measurements.append((athlete_id, measurement_date, height, weight, body_fat, muscle_mass, bmi))
     
     write_insert(output_file, 'BodyMeasurement', ['athlete_id', 'measurement_date', 'height', 'weight', 'body_fat_percentage', 'muscle_mass', 'bmi'], measurements)
 
@@ -321,7 +337,7 @@ def generate_medical_assessments(output_file, athlete_ids, medical_ids):
             assessment = (
                 athlete_id,
                 random.choice(medical_ids),
-                fake.date_between(start_date='-1y', end_date='today'),
+                fake.date_between(start_date='-6M', end_date='today'),
                 random.choice(assessment_types),
                 fake.text(max_nb_chars=300),
                 random.choice(['cleared', 'restricted', 'not_cleared'])
