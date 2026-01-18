@@ -1,7 +1,7 @@
 const TABS = [
-    { id: 'training', label: 'Progress',   roles: ['athlete', 'trainer'] },
+    { id: 'training', label: 'Progress', roles: ['athlete', 'trainer'] },
     { id: 'management', label: 'Management', roles: ['trainer'] },
-    { id: 'medical',    label: 'Medical',    roles: ['medical'] },
+    { id: 'medical', label: 'Medical', roles: ['medical'] },
 
 ];
 
@@ -104,8 +104,8 @@ signupForm.addEventListener('submit', (e) => {
         },
         body: JSON.stringify(signup_info)
     })
-    .then(res => res.json())
-    .then(data => window.alert("Sign up successful. Use log-in to enter."));
+        .then(res => res.json())
+        .then(data => window.alert("Sign up successful. Use log-in to enter."));
 })
 
 function logout() {
@@ -119,14 +119,14 @@ function showDashboard(user) {
     const dashboardTitle = document.getElementById("dashboard-title");
 
     dashboardTitle.innerText = `Welcome, ${user["first_name"]}!`;
-    
+
     const navMenu = document.getElementById('nav-menu');
     navMenu.innerHTML = '';
     let firstTabId = null;
 
     TABS.forEach(tab => {
         if (tab.roles.includes(role)) {
-            
+
             const btn = document.createElement('button');
             btn.className = 'tab-btn';
             btn.innerText = tab.label;
@@ -142,14 +142,14 @@ function showDashboard(user) {
 
 async function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(div => div.classList.add('hidden'));
-    
+
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
     document.getElementById(`content-${tabId}`).classList.remove('hidden');
 
     const user = JSON.parse(localStorage.getItem("user"));
 
-    if (user.role == "athlete"  && tabId === "training") {
+    if (user.role == "athlete" && tabId === "training") {
         const select = document.getElementById("athlete-select");
         select.classList.add('hidden');
 
@@ -164,10 +164,10 @@ async function switchTab(tabId) {
         select.classList.remove('hidden');
         select.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    
+
     const clickedBtn = Array.from(document.querySelectorAll('.tab-btn'))
         .find(b => b.innerText === TABS.find(t => t.id === tabId).label);
-    if (clickedBtn) clickedBtn.classList.add('active');  
+    if (clickedBtn) clickedBtn.classList.add('active');
 }
 
 const roleSelect = document.getElementById("role-select");
@@ -182,6 +182,8 @@ roleSelect.addEventListener("change", function () {
 });
 
 document.getElementById(`${roleSelect.value}-fields`).style.display = "block";
+
+// Training Tab
 
 async function loadAthletes(id) {
     const result = await fetch("http://127.0.0.1:5000/api/athletes");
@@ -198,7 +200,7 @@ async function loadAthletes(id) {
     });
 }
 
-// Training Tab
+
 loadAthletes("athlete-select");
 
 document.getElementById("athlete-select").addEventListener("change", async function () {
@@ -410,9 +412,9 @@ async function submitMedicalExam() {
             medical_id: user["user_id"],
             assessment_type: type,
             notes: exam_notes,
-            clearance_status: clearance 
+            clearance_status: clearance
         }
-    
+
         const response = await fetch("/api/addMedicalExam", {
             method: "POST",
             headers: {
