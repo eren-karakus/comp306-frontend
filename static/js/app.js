@@ -185,6 +185,7 @@ document.getElementById(`${roleSelect.value}-fields`).style.display = "block";
 
 // Training Tab
 
+// Load Athletes into dropdown
 async function loadAthletes(id) {
     const result = await fetch("http://127.0.0.1:5000/api/athletes");
     const athletes = await result.json();
@@ -203,6 +204,7 @@ async function loadAthletes(id) {
 
 loadAthletes("athlete-select");
 
+// Measurements Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#measurementTable tbody");
@@ -235,6 +237,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+// Medical Assessments Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#medicalAssessment tbody");
@@ -260,6 +263,8 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+
+// Last Training Logs Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#lastTraining tbody");
@@ -287,6 +292,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+// Session Adherence Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#sessionAdherence tbody");
@@ -312,6 +318,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+// Top Three Exercises Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#top_three_exercises tbody");
@@ -336,9 +343,62 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+// Submit Training Program (Management tab)
+document.getElementById('create-program-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('training_program_name').value.trim();
+    const difficulty = document.getElementById('training_program_difficulty').value;
+    const goal = document.getElementById('training_program_goal').value.trim();
+    const start_date = document.getElementById('training_program_start_date').value;
+    const end_date = document.getElementById('training_program_end_date').value;
+    const trainer_id = savedUser.user_id;
+
+    if (!name) {
+        window.alert('Program name is required.');
+        return;
+    }
+
+    const payload = {
+        name,
+        difficulty,
+        goal,
+        start_date,
+        end_date,
+        trainer_id
+    };
+
+    try {
+        const res = await fetch('/api/createTrainingProgram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            window.alert(data.message || 'Training program created.');
+            // clear form
+            document.getElementById('training_program_name').value = '';
+            document.getElementById('training_program_goal').value = '';
+            document.getElementById('training_program_start_date').value = '';
+            document.getElementById('training_program_end_date').value = '';
+            document.getElementById('training_program_difficulty').value = 'beginner';
+        } else {
+            const err = await res.json().catch(() => ({}));
+            window.alert(err.message || err.error || 'Failed to create program.');
+        }
+    } catch (err) {
+        console.error(err);
+        window.alert('Network error while creating program.');
+    }
+});
+
+
 // Medical Tab
 loadAthletes("athlete-select-medical")
 
+// Measurements Table
 document.getElementById("athlete-select-medical").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#measurementTable-medical tbody");
@@ -372,6 +432,7 @@ document.getElementById("athlete-select-medical").addEventListener("change", asy
     });
 });
 
+// Medical Assessments Table
 document.getElementById("athlete-select-medical").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#medicalAssessment-medical tbody");
@@ -398,6 +459,7 @@ document.getElementById("athlete-select-medical").addEventListener("change", asy
     });
 });
 
+// Submit Medical Exam
 async function submitMedicalExam() {
     const type = document.getElementById("assessment_type").value;
     const exam_notes = document.getElementById("medical_exam_notes").value;
@@ -432,3 +494,4 @@ async function submitMedicalExam() {
     }
 
 }
+

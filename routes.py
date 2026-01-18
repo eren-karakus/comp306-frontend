@@ -214,3 +214,25 @@ def query():
     cursor.close()
     conn.close()
     return jsonify(results)
+
+@app.route("/api/createTrainingProgram", methods=["POST"])
+@connect_first
+def create_training_program(cursor):
+    data = request.get_json() or {}
+    name = data.get("name")
+    difficulty = data.get("difficulty")
+    goal = data.get("goal")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    created_by = data.get("trainer_id")
+
+    if not name:
+        return jsonify({"error": "Program name is required"}), 400
+
+    sql = """
+        INSERT INTO trainingprogram
+        (program_name, difficulty_level, goal, start_date, end_date, created_by_trainer)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    cursor.execute(sql, (name, difficulty, goal, start_date, end_date, created_by))
+    return jsonify({"message": "Training program created successfully"}), 201
