@@ -8,7 +8,7 @@ const TABS = [
 const savedUser = JSON.parse(localStorage.getItem("user"));
 
 if (savedUser) {
-    showDashboard(savedUser.role);
+    showDashboard(savedUser);
     toggleView('dashboard-view');
 } else {
     toggleView('view-toggle-view');
@@ -61,7 +61,7 @@ loginForm.addEventListener('submit', async (e) => {
         toggleView('view-toggle-view');
         toggleView('login-view');
         toggleView('dashboard-view');
-        showDashboard(user.role);
+        showDashboard(user);
         console.log("User from backend:", user);
         console.log("Role:", user.role);
 
@@ -114,10 +114,11 @@ function logout() {
     toggleView('view-toggle-view');
 }
 
-function showDashboard(role) {
+function showDashboard(user) {
+    const role = user.role;
     const dashboardTitle = document.getElementById("dashboard-title");
 
-    dashboardTitle.innerText = `Welcome, ${savedUser["first_name"]}!`;
+    dashboardTitle.innerText = `Welcome, ${user["first_name"]}!`;
     
     const navMenu = document.getElementById('nav-menu');
     navMenu.innerHTML = '';

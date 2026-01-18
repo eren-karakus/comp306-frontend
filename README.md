@@ -4,4 +4,4 @@
 <p>Create a "password.txt" file inside the folder and write your password to the MySql server in it.</p>
 <p>Run the flask server with "python run.py" command.</p>
 
-Note: As it stands, the dummy data uses the same password for every user. This was done in order to make testing between different types of users easier. The system is capable of handling standard hash values that would be used in a real scenario.
+Note: As it stands, the dummy data uses the same password (123456) for every user. This was done in order to make testing between different types of users easier. The system is capable of handling standard hash values that would be used in a real scenario.
