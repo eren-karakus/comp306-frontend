@@ -253,10 +253,17 @@
                     </select>
 
                     <label>Session Date</label>
-                    <input type="date" id="session_date">
+                    <input type="date" id="session-date">
 
                     <label>Duration (minutes)</label>
-                    <input type="number" id="session_duration" min="1">
+                    <input type="number" id="session-duration" min="1">
+
+                    <label>Intensity Level</label>
+                    <select id="session-intensity">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
 
                     <button id="add-session-btn">Add Session</button>
 

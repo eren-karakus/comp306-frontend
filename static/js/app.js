@@ -447,7 +447,50 @@ async function loadTrainerPrograms(trainer_id) {
     });
 }
 
-loadTrainerPrograms(savedUser.user_id);
+async function submitWorkoutSession() {
+    const program_id = document.getElementById('trainer-program-select').value;
+    const session_date = document.getElementById('session-date').value;
+    const duration = document.getElementById('session-duration').value;
+    const intensity = document.getElementById('session-intensity').value;
+
+    if (!program_id) {
+        window.alert('Select a training program.');
+        return;
+    }
+    const payload = {
+        program_id,
+        session_date,
+        duration,
+        intensity
+    };
+    try {
+        const res = await fetch('/api/addWorkoutSession', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            window.alert(data.message || 'Workout session added.');
+            // clear form
+            document.getElementById('session-date').value = '';
+            document.getElementById('session-duration').value = '';
+            document.getElementById('session-intensity').value = 'medium';
+        } else {
+            const err = await res.json().catch(() => ({}));
+            window.alert(err.message || err.error || 'Failed to add session.');
+        }   
+    } catch (err) {
+        console.error(err);
+        window.alert('Network error while adding session.');
+    }
+}
+
+document.getElementById('add-session-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await submitWorkoutSession();
+
+});
 
 // Medical Tab
 loadAthletes("athlete-select-medical")

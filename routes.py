@@ -289,3 +289,22 @@ def get_workout_sessions(cursor, program_id):
     rows = cursor.fetchall()
     return jsonify(rows), 200
 
+@app.route("/api/addWorkoutSession", methods=["POST"])
+@connect_first
+def add_workout_session(cursor):
+    data = request.get_json()
+    program_id = data.get("program_id")
+    session_date = data.get("session_date")
+    duration = data.get("duration")
+    intensity = data.get("intensity")
+
+    if not program_id or not session_date:
+        return jsonify({"error": "Missing parameters"}), 400
+
+    sql = """
+        INSERT INTO workoutsession
+        (program_id, session_date, duration, intensity_level)
+        VALUES (%s, %s , %s, %s)
+    """
+    cursor.execute(sql, (program_id, session_date, duration, intensity))
+    return jsonify({"message": "Workout session added successfully"}), 201
