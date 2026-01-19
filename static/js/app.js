@@ -171,6 +171,10 @@ async function switchTab(tabId) {
         select.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    if (user.role == "trainer" && tabId === "management") {
+        await loadTrainerPrograms(user.user_id);
+    }
+
     const clickedBtn = Array.from(document.querySelectorAll('.tab-btn'))
         .find(b => b.innerText === TABS.find(t => t.id === tabId).label);
     if (clickedBtn) clickedBtn.classList.add('active');
@@ -350,6 +354,8 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
+
+
 // Top Three Exercises Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
@@ -426,6 +432,22 @@ document.getElementById('create-program-btn').addEventListener('click', async (e
     }
 });
 
+async function loadTrainerPrograms(trainer_id) {
+    const result = await fetch(`api/trainingPrograms/${trainer_id}`);
+    const programs = await result.json();
+    
+    const select = document.getElementById('trainer-program-select');
+    
+    select.innerHTML = '<option value="">Select a program</option>';
+    programs.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.program_id;
+        option.textContent = `${p.program_name} (${p.start_date.split(":")[0].slice(0, -3)} - ${p.end_date.split(":")[0].slice(0, -3)})`;
+        select.appendChild(option);
+    });
+}
+
+loadTrainerPrograms(savedUser.user_id);
 
 // Medical Tab
 loadAthletes("athlete-select-medical")
@@ -527,6 +549,7 @@ async function submitMedicalExam() {
 
 }
 
+//Athlete
 // Enrolled Programs dropdown data loading
 async function loadEnrolledPrograms(athleteId) {
     const select = document.getElementById('enrollment-programs');
@@ -636,7 +659,7 @@ async function loadAvailablePrograms(athleteId) {
     }
 }
 
-// New: Listen for program selection in enrollment tab
+//Listen for program selection in enrollment tab
 document.addEventListener('change', (e) => {
     if (e.target && e.target.id === 'enrollment-programs') {
         const programId = e.target.value;

@@ -237,6 +237,18 @@ def create_training_program(cursor):
     cursor.execute(sql, (name, difficulty, goal, start_date, end_date, created_by))
     return jsonify({"message": "Training program created successfully"}), 201
 
+@app.route("/api/trainingPrograms/<int:trainer_id>", methods=["GET"])
+@connect_first
+def get_trainer_programs(cursor, trainer_id):
+    cursor.execute("""
+        SELECT
+        program_id, program_name, start_date, end_date
+        FROM trainingprogram
+        WHERE created_by_trainer = %s
+    """, (trainer_id,))
+    rows = cursor.fetchall()
+    return jsonify(rows), 200
+
 @app.route("/api/athletePrograms/enrolled/<int:athlete_id>", methods=["GET"])
 @connect_first
 def get_enrolled_training_programs(cursor, athlete_id):
