@@ -95,13 +95,35 @@
             <div class="nav-tabs" id="nav-menu">
             </div>
 
+            <div id="content-enrollment" class="tab-content hidden">
+                <h3>Enrollment</h3>
+                <label>Enrolled Programs</label>
+                <select id="enrollment-programs">
+                    <option value="">No enrolled programs</option>
+                </select>
+                <h3>Workout Sessions</h3>
+                <div class="table-container">
+                    <table border="1" id="workout-sessions-container">
+                        <thead>
+                            <tr>
+                                <th>Session Date</th>
+                                <th>Duration (min)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
             <div id="content-training" class="tab-content hidden">
                 <h3>Training Progress</h3>
                 <label>Athlete</label>
                 <select id="athlete-select">
                     <option value="">Select an athlete</option>
                 </select>
-                
+
+                <br/>
                 <div id="measurements" class="hidden">
                     <label>Body Measurements</label>
                     <div class="table-container">
@@ -120,6 +142,7 @@
                     </table>
                 </div>
                 <br/>
+                
                 <label>Medical Assessment</label>
                 <div class="table-container">
                 <table border="1" id="medicalAssessment">
@@ -215,7 +238,6 @@
                 <h3>Medical Assessment</h3>
                 <label>Athlete</label>
                 <select id="athlete-select-medical">
-                    <option value="">Select an athlete</option>
                 </select>
                 
                 <div id="measurements-medical" class="hidden">

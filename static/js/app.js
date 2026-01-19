@@ -2,7 +2,7 @@ const TABS = [
     { id: 'training', label: 'Progress', roles: ['athlete', 'trainer'] },
     { id: 'management', label: 'Management', roles: ['trainer'] },
     { id: 'medical', label: 'Medical', roles: ['medical'] },
-
+    { id: 'enrollment', label: 'Enrollment', roles: ['athlete'] }
 ];
 
 const savedUser = JSON.parse(localStorage.getItem("user"));
@@ -132,7 +132,6 @@ function showDashboard(user) {
             btn.innerText = tab.label;
             btn.onclick = () => switchTab(tab.id);
             navMenu.appendChild(btn);
-
             if (!firstTabId) firstTabId = tab.id;
         }
     });
@@ -149,6 +148,7 @@ async function switchTab(tabId) {
 
     const user = JSON.parse(localStorage.getItem("user"));
 
+
     if (user.role == "athlete" && tabId === "training") {
         const select = document.getElementById("athlete-select");
         select.classList.add('hidden');
@@ -158,6 +158,11 @@ async function switchTab(tabId) {
         select.value = user.user_id;
         select.dispatchEvent(new Event('change', { bubbles: true }));
     }
+
+    if (user.role == "athlete" && tabId === "enrollment") {
+        await loadEnrolledPrograms(user.user_id);
+    }
+
 
     if (user.role == "trainer" && tabId === "training") {
         const select = document.getElementById("athlete-select");
@@ -169,6 +174,32 @@ async function switchTab(tabId) {
         .find(b => b.innerText === TABS.find(t => t.id === tabId).label);
     if (clickedBtn) clickedBtn.classList.add('active');
 }
+
+// Enrolled Programs dropdown for selected athlete
+document.getElementById("athlete-select").addEventListener("change", async function () {
+    const athleteId = this.value;
+    const enrolledSelect = document.getElementById("enrolled-programs");
+
+    enrolledSelect.innerHTML = '<option value="">No program selected</option>';
+
+    if (!athleteId) return;
+
+    try {   
+        const res = await fetch(`/api/athletePrograms/${athleteId}`);
+        if (!res.ok) return;
+        const programs = await res.json();
+        console.log('Enrolled programs:', programs);
+        enrolledSelect.innerHTML = '<option value="">Select an enrolled program</option>';
+        programs.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id || p.program_id || '';
+            option.textContent = `${p.name || p.program_name || 'Program'} — ${p.difficulty || p.difficulty_level || ''} (${p.start_date || ''} → ${p.end_date || ''})`;
+            enrolledSelect.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Failed to load enrolled programs', err);
+    }
+});
 
 const roleSelect = document.getElementById("role-select");
 const roleFields = document.querySelectorAll(".role-fields");
@@ -494,4 +525,85 @@ async function submitMedicalExam() {
     }
 
 }
+
+// Enrolled Programs dropdown data loading
+async function loadEnrolledPrograms(athleteId) {
+    const select = document.getElementById('enrollment-programs');
+    if (!select) return;
+    select.innerHTML = '<option value="">Loading...</option>';
+
+    if (!athleteId) {
+        select.innerHTML = '<option value="">No athlete selected</option>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/athletePrograms/${athleteId}`);
+        if (!res.ok) {
+            select.innerHTML = '<option value="">Failed to load</option>';
+            return;
+        }
+        const programs = await res.json();
+        if (!Array.isArray(programs) || programs.length === 0) {
+            select.innerHTML = '<option value="">No enrolled programs</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="">Select a program</option>';
+        programs.forEach(p => {
+            const id = p.program_id;
+            const name = p.program_name;
+            const start = p.start_date.split(":")[0].slice(0, -3);
+            const end = p.end_date.split(":")[0].slice(0, -3);
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${name}: (${start} - ${end})`;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error(err);
+        select.innerHTML = '<option value="">Error loading programs</option>';
+    }
+}
+
+async function loadWorkoutSessions(programId) {
+    const tbody = document.querySelector("#workout-sessions-container tbody");
+    
+    tbody.innerHTML = "";
+    
+    if (!programId) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`/api/workoutSessions/${programId}`);
+        if (!res.ok) {
+            return;
+        }
+        
+        const sessions = await res.json();
+        if (!Array.isArray(sessions) || sessions.length === 0) {
+            return;
+        }
+        
+        sessions.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${s.session_date.split(":")[0].slice(0, -3)}</td>
+                <td>${s.duration}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// New: Listen for program selection in enrollment tab
+document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'enrollment-programs') {
+        const programId = e.target.value;
+        loadWorkoutSessions(programId);
+    }
+});
 

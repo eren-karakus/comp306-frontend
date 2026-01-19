@@ -236,3 +236,30 @@ def create_training_program(cursor):
     """
     cursor.execute(sql, (name, difficulty, goal, start_date, end_date, created_by))
     return jsonify({"message": "Training program created successfully"}), 201
+
+@app.route("/api/athletePrograms/<int:athlete_id>", methods=["GET"])
+@connect_first
+def get_athlete_programs(cursor, athlete_id):
+    cursor.execute("""
+        SELECT
+        tp.program_id, tp.program_name, tp.start_date, tp.end_date
+        FROM trainingprogram tp
+        NATURAL JOIN programenrollment pe
+        WHERE pe.athlete_id = %s
+    """, (athlete_id,))
+    rows = cursor.fetchall()
+    return jsonify(rows), 200
+
+@app.route("/api/workoutSessions/<int:program_id>", methods=["GET"])
+@connect_first
+def get_workout_sessions(cursor, program_id):
+    cursor.execute("""
+        SELECT
+        *
+        FROM workoutsession
+        WHERE program_id = %s
+        ORDER BY (session_date) ASC
+    """, (program_id,))
+    rows = cursor.fetchall()
+    return jsonify(rows), 200
+
