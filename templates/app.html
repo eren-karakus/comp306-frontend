@@ -5,16 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Gym App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
 
 <body>
 
-    <div class="container">
-        <div id="view-toggle-view" class="hidden">
-            <button type="button" onclick="toggleView('login-view')">Login</button>
-            <button type="button" onclick="toggleView('signup-view')">Sign Up</button>
+
+    <div id="success-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="success-icon"></div>
+            <h3 id="success-title">Success!</h3>
+            <p id="success-message"></p>
+            <button onclick="closeSuccessAndGoToLogin()">Go to Login</button>
         </div>
+    </div>
+
+    <div class="container">
+        <div id="view-toggle-view" class="hidden"></div>
         
         <div id="login-view" class="hidden">
             <h2>Gym Login</h2>
@@ -26,6 +34,7 @@
 
                 <button type="submit">Log In</button>
             </form>
+            <p class="auth-switch">Don't have an account? <a href="#" onclick="toggleView('login-view'); toggleView('signup-view'); return false;">Sign Up</a></p>
         </div>
 
         <div id="signup-view" class="hidden">
@@ -84,6 +93,7 @@
                 
                 <button type="submit">Sign Up</button>
             </form>
+            <p class="auth-switch">Already have an account? <a href="#" onclick="toggleView('signup-view'); toggleView('login-view'); return false;">Log In</a></p>
         </div>
 
         <div id="dashboard-view" class="hidden">
@@ -103,7 +113,7 @@
                 </select>
                 <h3>Workout Sessions</h3>
                 <div class="table-container">
-                    <table border="1" id="workout-sessions-container">
+                    <table  id="workout-sessions-container">
                         <thead>
                             <tr>
                                 <th>Session Date</th>
@@ -114,16 +124,8 @@
                         </tbody>
                     </table>
                 </div>
-                <br/>
-                <label>Available Programs</label>
-                <select id="available-programs">
-                    <option value="">No available programs</option>
-                </select>
-                <button id="enroll-btn">Enroll</button>
             </div>
             
-
-
             <div id="content-training" class="tab-content hidden">
                 <h3>Training Progress</h3>
                 <label>Athlete</label>
@@ -133,141 +135,157 @@
 
                 <br/>
                 <div id="measurements" class="hidden">
-                    <label>Body Measurements</label>
-                    <div class="table-container">
-                    <table border="1" id="measurementTable">
-                    <thead>
-                        <tr>
-                        <th>Date</th>
-                        <th>Height (cm)</th>
-                        <th>Weight (kg)</th>
-                        <th>Body Fat %</th>
-                        <th>Muscle Mass (kg)</th>
-                        <th>BMI</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    </table>
-                </div>
-                <br/>
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Body Measurements</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="chart-container">
+                                <canvas id="measurementChart"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                <span class="legend-item"><span class="legend-color" style="background:#10b981"></span> BMI</span>
+                                <span class="legend-item"><span class="legend-color" style="background:#3b82f6"></span> Body Fat %</span>
+                                <span class="legend-item"><span class="legend-color" style="background:#f59e0b"></span> Muscle Mass (kg)</span>
+                            </div>
+                            <div class="table-container">
+                            <table  id="measurementTable">
+                            <thead>
+                                <tr>
+                                <th>Date</th>
+                                <th>Height (cm)</th>
+                                <th>Weight (kg)</th>
+                                <th>Body Fat %</th>
+                                <th>Muscle Mass (kg)</th>
+                                <th>BMI</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
                 
-                <label>Medical Assessment</label>
-                <div class="table-container">
-                <table border="1" id="medicalAssessment">
-                <thead>
-                    <tr>
-                    <th>Doctor</th>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Notes</th>
-                    <th>Clearance</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                </table>
-                </div>
-                <br/>
-                <label>Top 3 Exercises</label>
-                <div class="table-container">
-                <table border="1" id="top_three_exercises">
-                <thead>
-                    <tr>
-                    <th>Ranking</th>
-                    <th>Exercise</th>
-                    <th>Total Volume (Set * Rep * Weight (kg))</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                </table>
-                </div>
-                <br/>
-                <label>Last Training Info</label>
-                <div class="table-container">
-                <table border="1" id="lastTraining">
-                <thead>
-                    <tr>
-                    <th>Exercise</th>
-                    <th>Weight (kg) Used</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    <th>Perceived Exertion</th>
-                    <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                </table>
-                </div>
-                <br/>
-                <label>Session Adherence</label>
-                <div class="table-container">
-                <table border="1" id="sessionAdherence">
-                <thead>
-                    <tr>
-                    <th>Set Completion (%)</th>
-                    <th>Rep Completion (%)</th>
-                    <th>Average Perceived Exertion</th>
-                    <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                </table>
-                </div>
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Medical Assessment</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                            <table  id="medicalAssessment">
+                            <thead>
+                                <tr>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Notes</th>
+                                <th>Clearance</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Top 3 Exercises</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                            <table  id="top_three_exercises">
+                            <thead>
+                                <tr>
+                                <th>Ranking</th>
+                                <th>Exercise</th>
+                                <th>Total Volume (Set * Rep * Weight (kg))</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Last Training Info</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                            <table  id="lastTraining">
+                            <thead>
+                                <tr>
+                                <th>Exercise</th>
+                                <th>Weight (kg) Used</th>
+                                <th>Sets</th>
+                                <th>Reps</th>
+                                <th>Perceived Exertion</th>
+                                <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Session Adherence</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                            <table  id="sessionAdherence">
+                            <thead>
+                                <tr>
+                                <th>Set Completion (%)</th>
+                                <th>Rep Completion (%)</th>
+                                <th>Average Perceived Exertion</th>
+                                <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
             </div>
             </div>
 
             <div id="content-management" class="tab-content hidden">
                 <h3>Training Program Management</h3>
-                <button onclick="toggleView('create-program-form')">Create New Program</button>
-                <button onclick="toggleView('add-workout-session-form')">Add Workout Session</button>
-                <div id="create-program-form" class="hidden">
-                    <h4>Create New Program</h4>
-                    
-                    <label>Program Name</label>
-                    <input id="training_program_name" type="text"/>
+                <h4>Create New Program</h4>
+                
+                <label>Program Name</label>
+                <input id="training_program_name" type="text"/>
 
-                    <label>Difficulty Level</label>
-                    <select id="training_program_difficulty">
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advenced</option>
-                    </select>
+                <label>Difficulty Level</label>
+                <select id="training_program_difficulty">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advenced</option>
+                </select>
 
-                    <label>Goal</label><br/>
-                    <textarea id="training_program_goal"></textarea>
-                    <br/>
+                <label>Goal</label><br/>
+                <textarea id="training_program_goal"></textarea>
+                <br/>
 
-                    <label>Start Date</label>
-                    <input type="date" id="training_program_start_date"/>
+                <label>Start Date</label>
+                <input type="date" id="training_program_start_date"/>
 
-                    <label>End Date</label>
-                    <input type="date" id="training_program_end_date">
+                <label>End Date</label>
+                <input type="date" id="training_program_end_date">
 
-                    <button id="create-program-btn">Create</button>
-                </div>
-                <div id="add-workout-session-form" class="hidden">
-                    <h4>Add Workout Session</h4>
-                    
-                    <label>Select Program</label>
-                    <select id="trainer-program-select">
-                        <option value="">Select a program</option>
-                    </select>
-
-                    <label>Session Date</label>
-                    <input type="date" id="session-date">
-
-                    <label>Duration (minutes)</label>
-                    <input type="number" id="session-duration" min="1">
-
-                    <label>Intensity Level</label>
-                    <select id="session-intensity">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
-
-                    <button id="add-session-btn">Add Session</button>
-
+                <button id="create-program-btn">Create</button>
             </div>
+
             <div id="content-medical" class="tab-content hidden">
                 <h3>Medical Assessment</h3>
                 <label>Athlete</label>
@@ -275,39 +293,53 @@
                 </select>
                 
                 <div id="measurements-medical" class="hidden">
-                    <label>Body Measurements</label>
-                    <div class="table-container">
-                        <table border="1" id="measurementTable-medical">
-                        <thead>
-                            <tr>
-                            <th>Date</th>
-                            <th>Height (cm)</th>
-                            <th>Weight (kg)</th>
-                            <th>Body Fat %</th>
-                            <th>Muscle Mass (kg)</th>
-                            <th>BMI</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                        </table>
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Body Measurements</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                                <table  id="measurementTable-medical">
+                                <thead>
+                                    <tr>
+                                    <th>Date</th>
+                                    <th>Height (cm)</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Body Fat %</th>
+                                    <th>Muscle Mass (kg)</th>
+                                    <th>BMI</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <br/>
-                    <label>Medical Assessment</label>
-                    <div class="table-container">
-                    <table border="1" id="medicalAssessment-medical">
-                    <thead>
-                        <tr>
-                        <th>Doctor</th>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Notes</th>
-                        <th>Clearance</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    </table>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Medical Assessment</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="table-container">
+                            <table  id="medicalAssessment-medical">
+                            <thead>
+                                <tr>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Notes</th>
+                                <th>Clearance</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            </table>
+                            </div>
+                        </div>
                     </div>
-                    <br/>
+
                     <h3>New Medical Exam</h3>
                     <label>Assessment Type:</label>
                     <select id="assessment_type">
