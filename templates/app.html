@@ -219,6 +219,7 @@
                 <h3>Training Program Management</h3>
                 <button onclick="toggleView('create-program-form')">Create New Program</button>
                 <button onclick="toggleView('add-workout-session-form')">Add Workout Session</button>
+                <button onclick="toggleView('add-trainer-feedback-form')">Add Trainer Feedback</button>
                 <div id="create-program-form" class="hidden">
                     <h4>Create New Program</h4>
                     
@@ -266,7 +267,25 @@
                     </select>
 
                     <button id="add-session-btn">Add Session</button>
+                </div>
+                <div id="add-trainer-feedback-form" class="hidden">
+                    <h4>Add Trainer Feedback</h4>
+                    
+                    <label>Select Athlete</label>
+                    <select id="athlete-feedback-select">
+                        <option value="">Select an athlete</option>
+                    </select>
 
+                    <label>Select Workout Session</label>
+                    <select id="workout-session-select">
+                        <option value="">Select a session</option>
+                    </select>
+
+                    <label>Feedback Notes</label><br/>
+                    <textarea id="feedback-notes" style="width:100%; box-sizing:border-box;"></textarea>
+                    <br/>
+
+                    <button id="add-feedback-btn">Submit Feedback</button>
             </div>
             <div id="content-medical" class="tab-content hidden">
                 <h3>Medical Assessment</h3>

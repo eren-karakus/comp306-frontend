@@ -173,6 +173,7 @@ async function switchTab(tabId) {
 
     if (user.role == "trainer" && tabId === "management") {
         await loadTrainerPrograms(user.user_id);
+        await loadAthletesInPrograms(user.user_id);
     }
 
     const clickedBtn = Array.from(document.querySelectorAll('.tab-btn'))
@@ -189,7 +190,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
 
     if (!athleteId) return;
 
-    try {   
+    try {
         const res = await fetch(`/api/athletePrograms/enrolled/${athleteId}`);
         if (!res.ok) return;
         const programs = await res.json();
@@ -237,7 +238,6 @@ async function loadAthletes(id) {
     });
 }
 
-
 loadAthletes("athlete-select");
 
 // Measurements Table
@@ -267,7 +267,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
             <td>${row.body_fat_percentage}</td>
             <td>${row.muscle_mass}</td>
             <td>${row.bmi}</td>
-        `;
+`;
 
         tbody.appendChild(tr);
     });
@@ -354,8 +354,6 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
-
-
 // Top Three Exercises Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
@@ -435,9 +433,9 @@ document.getElementById('create-program-btn').addEventListener('click', async (e
 async function loadTrainerPrograms(trainer_id) {
     const result = await fetch(`api/trainingPrograms/${trainer_id}`);
     const programs = await result.json();
-    
+
     const select = document.getElementById('trainer-program-select');
-    
+
     select.innerHTML = '<option value="">Select a program</option>';
     programs.forEach(p => {
         const option = document.createElement('option');
@@ -479,7 +477,7 @@ async function submitWorkoutSession() {
         } else {
             const err = await res.json().catch(() => ({}));
             window.alert(err.message || err.error || 'Failed to add session.');
-        }   
+        }
     } catch (err) {
         console.error(err);
         window.alert('Network error while adding session.');
@@ -491,6 +489,79 @@ document.getElementById('add-session-btn').addEventListener('click', async (e) =
     await submitWorkoutSession();
 
 });
+
+async function loadAthletesInPrograms(trainer_id) {
+    const result = await fetch(`/api/trainer/${trainer_id}/athletes`);
+    const athletes = await result.json();
+    const select = document.getElementById('athlete-feedback-select');
+
+    select.innerHTML = '<option value="">Select an athlete</option>';
+    athletes.forEach(a => {
+        const option = document.createElement('option');
+        option.value = a.id;
+        option.textContent = a.name;
+        select.appendChild(option);
+    });
+}
+
+document.getElementById('athlete-feedback-select').addEventListener('change', async function () {
+    const athleteId = this.value;
+    const trainerId = savedUser.user_id;
+    await loadWorkoutSessionsForAthlete(athleteId, trainerId);
+});
+
+async function loadWorkoutSessionsForAthlete(athleteId, trainerId) {
+    const result = await fetch(`/api/workoutSessions/trainer/${trainerId}/athlete/${athleteId}`);
+    const sessions = await result.json();
+    const select = document.getElementById('workout-session-select');
+    select.innerHTML = '<option value="">Select a workout session</option>';
+    sessions.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.session_id;
+        option.textContent = `${s.session_date.split(":")[0].slice(0, -3)} - Duration: ${s.duration} mins`;
+        select.appendChild(option);
+    });
+}
+
+async function submitTrainerFeedback() {
+    const athlete_id = document.getElementById('athlete-feedback-select').value;
+    const feedback_text = document.getElementById('trainer-feedback-text').value.trim();
+    const trainer_id = savedUser.user_id;
+    if (!athlete_id) {
+        window.alert('Select an athlete.');
+        return;
+    }
+    const payload = {
+        athlete_id,
+        trainer_id,
+        feedback_text
+    };
+    try {
+        const res = await fetch('/api/addTrainerFeedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            window.alert(data.message || 'Feedback submitted.');
+            document.getElementById('athlete-feedback-select').value = '';
+            document.getElementById('trainer-feedback-text').value = '';
+        } else {
+            const err = await res.json().catch(() => ({}));
+            window.alert(err.message || err.error || 'Failed to submit feedback.');
+        }
+    } catch (err) {
+        console.error(err);
+        window.alert('Network error while submitting feedback.');
+    }
+}
+
+document.getElementById('submit-feedback-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await submitTrainerFeedback();
+});
+
 
 // Medical Tab
 loadAthletes("athlete-select-medical")
@@ -635,24 +706,24 @@ async function loadEnrolledPrograms(athleteId) {
 
 async function loadWorkoutSessions(programId) {
     const tbody = document.querySelector("#workout-sessions-container tbody");
-    
+
     tbody.innerHTML = "";
-    
+
     if (!programId) {
         return;
     }
-    
+
     try {
         const res = await fetch(`/api/workoutSessions/${programId}`);
         if (!res.ok) {
             return;
         }
-        
+
         const sessions = await res.json();
         if (!Array.isArray(sessions) || sessions.length === 0) {
             return;
         }
-        
+
         sessions.forEach(s => {
             const tr = document.createElement('tr');
             tr.innerHTML = `

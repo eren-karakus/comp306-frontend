@@ -289,6 +289,65 @@ def get_workout_sessions(cursor, program_id):
     rows = cursor.fetchall()
     return jsonify(rows), 200
 
+@app.route("/api/trainer/<int:trainer_id>/athletes", methods=["GET"])
+@connect_first
+def get_trainer_athletes(cursor, trainer_id):
+    cursor.execute("""
+        SELECT DISTINCT
+            a.athlete_id AS id,
+            CONCAT(u.first_name, ' ', u.last_name) AS name
+        FROM athlete a
+        JOIN programenrollment pe ON a.athlete_id = pe.athlete_id
+        JOIN trainingprogram tp ON pe.program_id = tp.program_id
+        JOIN user u ON u.user_id = a.athlete_id
+        WHERE tp.created_by_trainer = %s
+        ORDER BY name
+    """, (trainer_id,))
+    athletes = cursor.fetchall()
+    return jsonify(athletes), 200
+
+@app.route('/api/workoutSessions/trainer/${trainerId}/athlete/${athleteId}', methods=['GET'])
+@connect_first
+def get_athlete_workout_sessions(cursor, athleteId, trainerId):
+    cursor.execute("""
+        SELECT DISTINCT 
+        ws.session_id, 
+        ws.session_date, 
+        ws.duration, 
+        ws.intensity_level,
+        tp.program_name
+        FROM WorkoutSession ws
+        JOIN TrainingProgram tp ON ws.program_id = tp.program_id
+        JOIN PerformanceLog pl ON ws.session_id = pl.session_id
+        WHERE pl.athlete_id = %s 
+        AND tp.created_by_trainer = %s
+    """, (athleteId, trainerId, ))
+    sessions = cursor.fetchall()
+    return jsonify(sessions), 200
+
+@app.route("/api/trainerFeedback", methods=["POST"])
+@connect_first
+def add_trainer_feedback(cursor):
+    data = request.get_json()
+    athlete_id = data.get("athlete_id")
+    trainer_id = data.get("trainer_id")
+    feedback_date = data.get("feedback_date")
+    comments = data.get("comments")
+    rating = data.get("rating")
+
+    if not athlete_id or not trainer_id or not feedback_date:
+        return jsonify({"error": "Missing parameters"}), 400
+
+    sql = """
+        INSERT INTO trainerfeedback
+        (athlete_id, trainer_id, feedback_date, comments, rating)
+        VALUES (%s, %s , %s, %s, %s)
+    """
+    cursor.execute(sql, (athlete_id, trainer_id, feedback_date, comments, rating))
+    return jsonify({"message": "Trainer feedback added successfully"}), 201
+
+
+
 @app.route("/api/addWorkoutSession", methods=["POST"])
 @connect_first
 def add_workout_session(cursor):
@@ -308,3 +367,4 @@ def add_workout_session(cursor):
     """
     cursor.execute(sql, (program_id, session_date, duration, intensity))
     return jsonify({"message": "Workout session added successfully"}), 201
+
