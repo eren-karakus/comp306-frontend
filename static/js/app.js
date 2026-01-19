@@ -11,7 +11,36 @@ if (savedUser) {
     showDashboard(savedUser);
     toggleView('dashboard-view');
 } else {
-    toggleView('view-toggle-view');
+    toggleView('login-view');
+}
+
+function showSuccessMessage(title, message) {
+    document.getElementById('success-title').innerText = title;
+    document.getElementById('success-message').innerText = message;
+    document.getElementById('success-modal').classList.remove('hidden');
+}
+
+function closeSuccessAndGoToLogin() {
+    document.getElementById('success-modal').classList.add('hidden');
+    document.getElementById('signup-view').classList.add('hidden');
+    document.getElementById('login-view').classList.remove('hidden');
+    document.getElementById('signup-form').reset();
+}
+
+function toggleAccordion(header) {
+    const content = header.nextElementSibling;
+    const isOpen = content.classList.contains('open');
+    
+    const parent = header.closest('#measurements, #measurements-medical');
+    if (parent) {
+        parent.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+        parent.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+    }
+    
+    if (!isOpen) {
+        content.classList.add('open');
+        header.classList.add('active');
+    }
 }
 
 function toggleView(view_id) {
@@ -105,13 +134,15 @@ signupForm.addEventListener('submit', (e) => {
         body: JSON.stringify(signup_info)
     })
         .then(res => res.json())
-        .then(data => window.alert("Sign up successful. Use log-in to enter."));
+        .then(data => {
+            showSuccessMessage("Sign up successful!", "Your account has been created. Click below to log in.");
+        });
 })
 
 function logout() {
     localStorage.removeItem('user');
     toggleView('dashboard-view');
-    toggleView('view-toggle-view');
+    toggleView('login-view');
 }
 
 function showDashboard(user) {
@@ -161,7 +192,6 @@ async function switchTab(tabId) {
 
     if (user.role == "athlete" && tabId === "enrollment") {
         await loadEnrolledPrograms(user.user_id);
-        await loadAvailablePrograms(user.user_id);
     }
 
 
@@ -169,10 +199,6 @@ async function switchTab(tabId) {
         const select = document.getElementById("athlete-select");
         select.classList.remove('hidden');
         select.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    if (user.role == "trainer" && tabId === "management") {
-        await loadTrainerPrograms(user.user_id);
     }
 
     const clickedBtn = Array.from(document.querySelectorAll('.tab-btn'))
@@ -190,7 +216,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     if (!athleteId) return;
 
     try {   
-        const res = await fetch(`/api/athletePrograms/enrolled/${athleteId}`);
+        const res = await fetch(`/api/athletePrograms/${athleteId}`);
         if (!res.ok) return;
         const programs = await res.json();
         console.log('Enrolled programs:', programs);
@@ -240,7 +266,7 @@ async function loadAthletes(id) {
 
 loadAthletes("athlete-select");
 
-// Measurements Table
+let measurementChart = null;
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#measurementTable tbody");
@@ -253,10 +279,20 @@ document.getElementById("athlete-select").addEventListener("change", async funct
 
     tbody.innerHTML = "";
 
+    if (measurementChart) {
+        measurementChart.destroy();
+        measurementChart = null;
+    }
+
     if (!athleteId) return;
 
     const response = await fetch(`/api/measurements/${athleteId}`);
     const data = await response.json();
+
+    const labels = [];
+    const bmiData = [];
+    const bodyFatData = [];
+    const muscleMassData = [];
 
     data.forEach(row => {
         const tr = document.createElement("tr");
@@ -270,7 +306,85 @@ document.getElementById("athlete-select").addEventListener("change", async funct
         `;
 
         tbody.appendChild(tr);
+
+        const date = new Date(row.measurement_date);
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const formattedDate = monthNames[date.getMonth()] + ' ' + String(date.getFullYear()).slice(-2);
+        labels.push(formattedDate);
+        bmiData.push(row.bmi);
+        bodyFatData.push(row.body_fat_percentage);
+        muscleMassData.push(row.muscle_mass);
     });
+
+    if (data.length > 0) {
+        const ctx = document.getElementById('measurementChart').getContext('2d');
+        measurementChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.reverse(),
+                datasets: [
+                    {
+                        label: 'BMI',
+                        data: bmiData.reverse(),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#10b981',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Body Fat %',
+                        data: bodyFatData.reverse(),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Muscle Mass (kg)',
+                        data: muscleMassData.reverse(),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#f59e0b',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
 });
 
 // Medical Assessments Table
@@ -354,8 +468,6 @@ document.getElementById("athlete-select").addEventListener("change", async funct
     });
 });
 
-
-
 // Top Three Exercises Table
 document.getElementById("athlete-select").addEventListener("change", async function () {
     const athleteId = this.value;
@@ -432,65 +544,6 @@ document.getElementById('create-program-btn').addEventListener('click', async (e
     }
 });
 
-async function loadTrainerPrograms(trainer_id) {
-    const result = await fetch(`api/trainingPrograms/${trainer_id}`);
-    const programs = await result.json();
-    
-    const select = document.getElementById('trainer-program-select');
-    
-    select.innerHTML = '<option value="">Select a program</option>';
-    programs.forEach(p => {
-        const option = document.createElement('option');
-        option.value = p.program_id;
-        option.textContent = `${p.program_name} (${p.start_date.split(":")[0].slice(0, -3)} - ${p.end_date.split(":")[0].slice(0, -3)})`;
-        select.appendChild(option);
-    });
-}
-
-async function submitWorkoutSession() {
-    const program_id = document.getElementById('trainer-program-select').value;
-    const session_date = document.getElementById('session-date').value;
-    const duration = document.getElementById('session-duration').value;
-    const intensity = document.getElementById('session-intensity').value;
-
-    if (!program_id) {
-        window.alert('Select a training program.');
-        return;
-    }
-    const payload = {
-        program_id,
-        session_date,
-        duration,
-        intensity
-    };
-    try {
-        const res = await fetch('/api/addWorkoutSession', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-            const data = await res.json().catch(() => ({}));
-            window.alert(data.message || 'Workout session added.');
-            // clear form
-            document.getElementById('session-date').value = '';
-            document.getElementById('session-duration').value = '';
-            document.getElementById('session-intensity').value = 'medium';
-        } else {
-            const err = await res.json().catch(() => ({}));
-            window.alert(err.message || err.error || 'Failed to add session.');
-        }   
-    } catch (err) {
-        console.error(err);
-        window.alert('Network error while adding session.');
-    }
-}
-
-document.getElementById('add-session-btn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    await submitWorkoutSession();
-
-});
 
 // Medical Tab
 loadAthletes("athlete-select-medical")
@@ -592,7 +645,6 @@ async function submitMedicalExam() {
 
 }
 
-//Athlete
 // Enrolled Programs dropdown data loading
 async function loadEnrolledPrograms(athleteId) {
     const select = document.getElementById('enrollment-programs');
@@ -605,7 +657,7 @@ async function loadEnrolledPrograms(athleteId) {
     }
 
     try {
-        const res = await fetch(`/api/athletePrograms/enrolled/${athleteId}`);
+        const res = await fetch(`/api/athletePrograms/${athleteId}`);
         if (!res.ok) {
             select.innerHTML = '<option value="">Failed to load</option>';
             return;
@@ -666,43 +718,7 @@ async function loadWorkoutSessions(programId) {
     }
 }
 
-async function loadAvailablePrograms(athleteId) {
-    const select = document.getElementById('available-programs');
-    if (!select) return;
-    select.innerHTML = '<option value="">Loading...</option>';
-    if (!athleteId) {
-        select.innerHTML = '<option value="">No athlete selected</option>';
-        return;
-    }
-    try {
-        const res = await fetch(`/api/athletePrograms/notEnrolled/${athleteId}`);
-        if (!res.ok) {
-            select.innerHTML = '<option value="">Failed to load</option>';
-            return;
-        }
-        const programs = await res.json();
-        if (!Array.isArray(programs) || programs.length === 0) {
-            select.innerHTML = '<option value="">No available programs</option>';
-            return;
-        }
-        select.innerHTML = '<option value="">Select a program</option>';
-        programs.forEach(p => {
-            const id = p.program_id;
-            const name = p.program_name;
-            const start = p.start_date.split(":")[0].slice(0, -3);
-            const end = p.end_date.split(":")[0].slice(0, -3);
-            const option = document.createElement('option');
-            option.value = id;
-            option.textContent = `${name}: (${start} - ${end})`;
-            select.appendChild(option);
-        });
-    } catch (err) {
-        console.error(err);
-        select.innerHTML = '<option value="">Error loading programs</option>';
-    }
-}
-
-//Listen for program selection in enrollment tab
+// New: Listen for program selection in enrollment tab
 document.addEventListener('change', (e) => {
     if (e.target && e.target.id === 'enrollment-programs') {
         const programId = e.target.value;
