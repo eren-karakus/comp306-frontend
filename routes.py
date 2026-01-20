@@ -312,14 +312,14 @@ def get_trainer_athletes(cursor, trainer_id):
 def get_athlete_workout_sessions(cursor, trainer_id, athlete_id):
     cursor.execute("""
         SELECT
-    ws.session_id,
-    ws.session_date,
-    ws.duration
-    FROM workoutsession ws
-    JOIN trainingprogram tp ON ws.program_id = tp.program_id
-    JOIN programenrollment pe ON tp.program_id = pe.program_id
-    WHERE pe.athlete_id = %s AND tp.created_by_trainer = %s;
-                   """, (athlete_id, trainer_id,))
+        ws.session_id,
+        ws.session_date,
+        ws.duration
+        FROM workoutsession ws
+        JOIN trainingprogram tp ON ws.program_id = tp.program_id
+        JOIN programenrollment pe ON tp.program_id = pe.program_id
+        WHERE pe.athlete_id = %s AND tp.created_by_trainer = %s;
+        """, (athlete_id, trainer_id,))
     sessions = cursor.fetchall()
     return jsonify(sessions), 200
 

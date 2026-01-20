@@ -631,16 +631,37 @@ document.getElementById('athlete-feedback-select').addEventListener('change', as
 });
 
 async function loadWorkoutSessionsForAthlete(athleteId, trainerId) {
-    const result = await fetch(`/api/workoutSessions/trainer/${trainerId}/athlete/${athleteId}`);
-    const sessions = await result.json();
-    const select = document.getElementById('workout-session-select');
-    select.innerHTML = '<option value="">Select a workout session</option>';
-    sessions.forEach(s => {
-        const option = document.createElement('option');
-        option.value = s.session_id;
-        option.textContent = `${s.session_date.split(":")[0].slice(0, -3)} - Duration: ${s.duration} mins`;
-        select.appendChild(option);
-    });
+    if (!athleteId) {
+        const select = document.getElementById('workout-session-select');
+        if (select) select.innerHTML = '<option value="">Select a workout session</option>';
+        return;
+    }
+
+    try {
+        const result = await fetch(`/api/workoutSessions/trainer/${trainerId}/athlete/${athleteId}`);
+        if (!result.ok) {
+            console.error('Failed to fetch workout sessions');
+            return;
+        }
+
+        const sessions = await result.json();
+        const select = document.getElementById('workout-session-select');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Select a workout session</option>';
+        
+        if (Array.isArray(sessions)) {
+            sessions.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.session_id;
+                const datePart = s.session_date.split(":")[0].slice(0, -3);
+                option.textContent = `${datePart} - Duration: ${s.duration} mins`;
+                select.appendChild(option);
+            });
+        }
+    } catch (err) {
+        console.error('Error loading workout sessions:', err);
+    }
 }
 
 async function submitTrainerFeedback() {
