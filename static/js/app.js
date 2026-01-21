@@ -333,7 +333,7 @@ document.getElementById("athlete-select").addEventListener("change", async funct
             <td>${row.body_fat_percentage}</td>
             <td>${row.muscle_mass}</td>
             <td>${row.bmi}</td>
-`;
+        `;
 
         tbody.appendChild(tr);
 
@@ -962,4 +962,54 @@ document.getElementById('enroll-btn').addEventListener('click', async (e) => {
     e.preventDefault();
     await enrollInProgram();
 });
+
+document.getElementById('enrollment-programs').addEventListener('change', async function () {
+    const programId = this.value;
+    const user = JSON.parse(localStorage.getItem("user"));
+    
+    if (user && user.role === "athlete") {
+        await loadWorkoutSessionsForProgram(programId);
+    }
+});
+
+async function loadWorkoutSessionsForProgram(programId) {
+    const tbody = document.querySelector('#workout-sessions-table tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+
+    if (!programId) {
+        tbody.innerHTML = '<tr><td colspan="3">Select a program to view sessions</td></tr>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/workoutSessions/${programId}`);
+        if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="3">Failed to load sessions</td></tr>';
+            return;
+        }
+        
+        const sessions = await res.json();
+        if (!Array.isArray(sessions) || sessions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">No workout sessions available for this program</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        sessions.forEach(s => {
+            const row = document.createElement('tr');
+            const datePart = s.session_date.split(":")[0].slice(0, -3);
+            
+            row.innerHTML = `
+                <td>${datePart}</td>
+                <td>${s.duration}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (err) {
+        console.error('Error loading workout sessions:', err);
+        tbody.innerHTML = '<tr><td colspan="3">Error loading sessions</td></tr>';
+    }
+}
 

@@ -291,7 +291,7 @@ def get_workout_sessions(cursor, program_id):
         *
         FROM workoutsession
         WHERE program_id = %s
-        ORDER BY (session_date) ASC
+        ORDER BY (session_date) DESC
     """, (program_id,))
     rows = cursor.fetchall()
     return jsonify(rows), 200
