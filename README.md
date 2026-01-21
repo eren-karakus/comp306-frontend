@@ -1,10 +1,13 @@
 <h1>COMP 306 Project - Athlete Tracking App </h1>
 
 <p>Requirements:</p>
-<p>Flask</p> 
-<p>Bcrypt</p>
-<p>mysql-connector-python</p>
-<p>Faker (for data generation)</p>
+<ul>
+  <li>Flask</li>
+  <li>flask_cors</li>
+  <li>Bcrypt</li>
+  <li>mysql-connector-python</li>
+  <li>Faker (for data generation)</li>
+</ul>
 
 <p>Run your local MySQL server and create the "gym" database in it by executing the queries in "gym.sql".</p>
 <p>Create a "password.txt" file inside the folder and write your password to the MySql server in it.</p>
