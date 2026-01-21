@@ -27,22 +27,6 @@ function closeSuccessAndGoToLogin() {
     document.getElementById('signup-form').reset();
 }
 
-function toggleAccordion(header) {
-    const content = header.nextElementSibling;
-    const isOpen = content.classList.contains('open');
-    
-    const parent = header.closest('#measurements, #measurements-medical');
-    if (parent) {
-        parent.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
-        parent.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
-    }
-    
-    if (!isOpen) {
-        content.classList.add('open');
-        header.classList.add('active');
-    }
-}
-
 const managementForms = [
     'create-program-form',
     'add-workout-session-form',
@@ -230,6 +214,10 @@ async function switchTab(tabId) {
     if (user.role == "trainer" && tabId === "management") {
         await loadTrainerPrograms(user.user_id);
         await loadAthletesInPrograms(user.user_id);
+    }
+
+    if (user.role == "medical" && tabId === "medical") {
+        await loadAthletes("athlete-select-medical");
     }
 
     const clickedBtn = Array.from(document.querySelectorAll('.tab-btn'))
@@ -743,7 +731,6 @@ document.getElementById('add-feedback-btn').addEventListener('click', async (e) 
 // Medical Tab
 loadAthletes("athlete-select-medical")
 
-// Measurements Table
 document.getElementById("athlete-select-medical").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#measurementTable-medical tbody");
@@ -777,7 +764,6 @@ document.getElementById("athlete-select-medical").addEventListener("change", asy
     });
 });
 
-// Medical Assessments Table
 document.getElementById("athlete-select-medical").addEventListener("change", async function () {
     const athleteId = this.value;
     const tbody = document.querySelector("#medicalAssessment-medical tbody");
@@ -804,7 +790,6 @@ document.getElementById("athlete-select-medical").addEventListener("change", asy
     });
 });
 
-// Submit Medical Exam
 async function submitMedicalExam() {
     const type = document.getElementById("assessment_type").value;
     const exam_notes = document.getElementById("medical_exam_notes").value;
@@ -819,9 +804,9 @@ async function submitMedicalExam() {
             medical_id: user["user_id"],
             assessment_type: type,
             notes: exam_notes,
-            clearance_status: clearance
+            clearance_status: clearance 
         }
-
+    
         const response = await fetch("/api/addMedicalExam", {
             method: "POST",
             headers: {
@@ -999,11 +984,12 @@ async function loadWorkoutSessionsForProgram(programId) {
         tbody.innerHTML = '';
         sessions.forEach(s => {
             const row = document.createElement('tr');
-            const datePart = s.session_date.split(":")[0].slice(0, -3);
+            const datePart = s.session_date.split("T")[0];
             
             row.innerHTML = `
                 <td>${datePart}</td>
                 <td>${s.duration}</td>
+
             `;
             tbody.appendChild(row);
         });

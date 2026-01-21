@@ -153,128 +153,93 @@
 
                 <br/>
                 <div id="measurements" class="hidden">
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Body Measurements</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="chart-container">
-                                <canvas id="measurementChart"></canvas>
-                            </div>
-                            <div class="chart-legend">
-                                <span class="legend-item"><span class="legend-color" style="background:#10b981"></span> BMI</span>
-                                <span class="legend-item"><span class="legend-color" style="background:#3b82f6"></span> Body Fat %</span>
-                                <span class="legend-item"><span class="legend-color" style="background:#f59e0b"></span> Muscle Mass (kg)</span>
-                            </div>
-                            <div class="table-container">
-                            <table  id="measurementTable">
-                            <thead>
-                                <tr>
-                                <th>Date</th>
-                                <th>Height (cm)</th>
-                                <th>Weight (kg)</th>
-                                <th>Body Fat %</th>
-                                <th>Muscle Mass (kg)</th>
-                                <th>BMI</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
+                    <h4>Body Measurements</h4>
+                    <div class="chart-container">
+                        <canvas id="measurementChart"></canvas>
                     </div>
-                
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Medical Assessment</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                            <table  id="medicalAssessment">
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color" style="background:#10b981"></span> BMI</span>
+                        <span class="legend-item"><span class="legend-color" style="background:#3b82f6"></span> Body Fat %</span>
+                        <span class="legend-item"><span class="legend-color" style="background:#f59e0b"></span> Muscle Mass (kg)</span>
+                    </div>
+                    <div class="table-container">
+                        <table id="measurementTable">
                             <thead>
                                 <tr>
-                                <th>Doctor</th>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Notes</th>
-                                <th>Clearance</th>
+                                    <th>Date</th>
+                                    <th>Height (cm)</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Body Fat %</th>
+                                    <th>Muscle Mass (kg)</th>
+                                    <th>BMI</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
+                        </table>
                     </div>
 
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Top 3 Exercises</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                            <table  id="top_three_exercises">
+                    <h4>Medical Assessment</h4>
+                    <div class="table-container">
+                        <table id="medicalAssessment">
                             <thead>
                                 <tr>
-                                <th>Ranking</th>
-                                <th>Exercise</th>
-                                <th>Total Volume (Set * Rep * Weight (kg))</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Notes</th>
+                                    <th>Clearance</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
+                        </table>
                     </div>
 
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Last Training Info</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                            <table  id="lastTraining">
+                    <h4>Top 3 Exercises</h4>
+                    <div class="table-container">
+                        <table id="top_three_exercises">
                             <thead>
                                 <tr>
-                                <th>Exercise</th>
-                                <th>Weight (kg) Used</th>
-                                <th>Sets</th>
-                                <th>Reps</th>
-                                <th>Perceived Exertion</th>
-                                <th>Date</th>
+                                    <th>Ranking</th>
+                                    <th>Exercise</th>
+                                    <th>Total Volume (Set * Rep * Weight (kg))</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
+                        </table>
                     </div>
 
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Session Adherence</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                            <table  id="sessionAdherence">
+                    <h4>Last Training Info</h4>
+                    <div class="table-container">
+                        <table id="lastTraining">
                             <thead>
                                 <tr>
-                                <th>Set Completion (%)</th>
-                                <th>Rep Completion (%)</th>
-                                <th>Average Perceived Exertion</th>
-                                <th>Date</th>
+                                    <th>Exercise</th>
+                                    <th>Weight (kg) Used</th>
+                                    <th>Sets</th>
+                                    <th>Reps</th>
+                                    <th>Perceived Exertion</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
+                        </table>
                     </div>
-            </div>
+
+                    <h4>Session Adherence</h4>
+                    <div class="table-container">
+                        <table id="sessionAdherence">
+                            <thead>
+                                <tr>
+                                    <th>Set Completion (%)</th>
+                                    <th>Rep Completion (%)</th>
+                                    <th>Average Perceived Exertion</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div id="content-management" class="tab-content hidden">
@@ -358,81 +323,68 @@
 
                     <button id="add-feedback-btn">Submit Feedback</button>
             </div>
-            <div id="content-medical" class="tab-content hidden">
-                <h3>Medical Assessment</h3>
-                <label>Athlete</label>
-                <select id="athlete-select-medical">
-                </select>
-                
-                <div id="measurements-medical" class="hidden">
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Body Measurements</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                                <table  id="measurementTable-medical">
-                                <thead>
-                                    <tr>
-                                    <th>Date</th>
-                                    <th>Height (cm)</th>
-                                    <th>Weight (kg)</th>
-                                    <th>Body Fat %</th>
-                                    <th>Muscle Mass (kg)</th>
-                                    <th>BMI</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+        </div>
 
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>Medical Assessment</span>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="table-container">
-                            <table  id="medicalAssessment-medical">
-                            <thead>
-                                <tr>
+        <div id="content-medical" class="tab-content hidden">
+            <h3>Medical Assessment</h3>
+            <label>Athlete</label>
+            <select id="athlete-select-medical">
+            </select>
+            
+            <div id="measurements-medical">
+                <h4>Body Measurements</h4>
+                <div class="table-container">
+                    <table id="measurementTable-medical">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Height (cm)</th>
+                                <th>Weight (kg)</th>
+                                <th>Body Fat %</th>
+                                <th>Muscle Mass (kg)</th>
+                                <th>BMI</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <h4>Medical Assessment</h4>
+                <div class="table-container">
+                    <table id="medicalAssessment-medical">
+                        <thead>
+                            <tr>
                                 <th>Doctor</th>
                                 <th>Date</th>
                                 <th>Type</th>
                                 <th>Notes</th>
                                 <th>Clearance</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                            </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3>New Medical Exam</h3>
-                    <label>Assessment Type:</label>
-                    <select id="assessment_type">
-                        <option value="Recovery Assessment">Recovery Assessment</option>
-                        <option value="Physical Examination">Physical Examination</option>
-                        <option value="Nutritional Consultation">Nutritional Consultation</option>
-                        <option value="Injury Assessment">Injury Assessment</option>
-                        <option value="Clearance Check">Clearance Check</option>
-                    </select>
-                    <label for="medical_exam_notes">Examination Notes</label>
-                    <br/>
-                    <textarea id="medical_exam_notes"></textarea>
-                    <br/>
-                    <label>Clearance Status</label>
-                    <select id="clearance_status">
-                        <option value="cleared">Cleared</option>
-                        <option value="not_cleared">Not Cleared</option>
-                        <option value="restricted">Restricted</option>
-                    </select>
-                    <button onclick="submitMedicalExam()">Submit Examination</button>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
+
+                <h3>New Medical Exam</h3>
+                <label>Assessment Type:</label>
+                <select id="assessment_type">
+                    <option value="Recovery Assessment">Recovery Assessment</option>
+                    <option value="Physical Examination">Physical Examination</option>
+                    <option value="Nutritional Consultation">Nutritional Consultation</option>
+                    <option value="Injury Assessment">Injury Assessment</option>
+                    <option value="Clearance Check">Clearance Check</option>
+                </select>
+                <label for="medical_exam_notes">Examination Notes</label>
+                <br/>
+                <textarea id="medical_exam_notes"></textarea>
+                <br/>
+                <label>Clearance Status</label>
+                <select id="clearance_status">
+                    <option value="cleared">Cleared</option>
+                    <option value="not_cleared">Not Cleared</option>
+                    <option value="restricted">Restricted</option>
+                </select>
+                <button onclick="submitMedicalExam()">Submit Examination</button>
             </div>
         </div>
     </div>
