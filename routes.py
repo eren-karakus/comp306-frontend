@@ -267,14 +267,21 @@ def get_enrolled_training_programs(cursor, athlete_id):
 @connect_first
 def get_available_training_programs(cursor, athlete_id):
     cursor.execute("""
-        SELECT DISTINCT
-        tp.program_id, tp.program_name, tp.start_date, tp.end_date
+        SELECT
+            tp.program_id,
+            tp.program_name,
+            tp.start_date,
+            tp.end_date
         FROM trainingprogram tp
-        NATURAL JOIN programenrollment pe
-        WHERE NOT(pe.athlete_id = %s)
+        WHERE tp.program_id NOT IN (
+            SELECT program_id 
+            FROM programenrollment 
+            WHERE athlete_id = %s
+        )
+        ORDER BY tp.start_date DESC
     """, (athlete_id,))
-    rows = cursor.fetchall()
-    return jsonify(rows), 200
+    programs = cursor.fetchall()
+    return jsonify(programs)
 
 @app.route("/api/workoutSessions/<int:program_id>", methods=["GET"])
 @connect_first
@@ -376,7 +383,7 @@ def enroll_athlete(cursor):
     # Check if already enrolled
     cursor.execute("""
         SELECT * FROM programenrollment
-        WHERE athlete_id = %s AND program_id = %s
+        WHERE athlete_id = %s AND program_id = %s 
     """, (athlete_id, program_id))
     
     if cursor.fetchone():
