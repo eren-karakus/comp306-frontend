@@ -397,3 +397,43 @@ def enroll_athlete(cursor):
     cursor.execute(sql, (athlete_id, program_id))
     return jsonify({"message": "Successfully enrolled in program"}), 201
 
+@app.route("/api/leaderboard/<int:trainer_id>", methods=["GET"])
+@connect_first
+def get_leaderboard(cursor, trainer_id):
+    cursor.execute("""
+        WITH per_prog AS (
+            SELECT
+                ws.program_id,
+                pl.athlete_id,
+                COUNT(DISTINCT pl.session_id) AS logged_sessions,
+                ROUND(AVG(pl.perceived_exertion), 2) AS avg_rpe
+            FROM PerformanceLog pl
+            JOIN WorkoutSession ws ON ws.session_id = pl.session_id
+            GROUP BY ws.program_id, pl.athlete_id
+        ),
+        ranked AS (
+            SELECT
+                *,
+                RANK() OVER (
+                    PARTITION BY program_id
+                    ORDER BY logged_sessions DESC, avg_rpe DESC
+                ) AS rnk
+            FROM per_prog
+        )
+        SELECT
+            r.program_id,
+            tp.program_name,
+            r.athlete_id,
+            CONCAT(u.first_name, ' ', u.last_name) AS athlete_name,
+            r.logged_sessions,
+            r.avg_rpe,
+            r.rnk
+        FROM ranked r
+        JOIN TrainingProgram tp ON tp.program_id = r.program_id
+        JOIN User u ON u.user_id = r.athlete_id
+        WHERE r.rnk <= 5 AND tp.created_by_trainer = %s
+        ORDER BY r.program_id, r.rnk, r.athlete_id
+    """, (trainer_id,))
+    rows = cursor.fetchall()
+    return jsonify(rows), 200
+

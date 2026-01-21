@@ -30,7 +30,8 @@ function closeSuccessAndGoToLogin() {
 const managementForms = [
     'create-program-form',
     'add-workout-session-form',
-    'add-trainer-feedback-form'
+    'add-trainer-feedback-form',
+    'leaderboard-section'
 ];
 
 function showOnlyManagementForm(formId) {
@@ -50,6 +51,10 @@ document.getElementById('add-workout-session-button').addEventListener('click', 
 });
 document.getElementById('add-trainer-feedback-button').addEventListener('click', () => {
     showOnlyManagementForm('add-trainer-feedback-form');
+});
+document.getElementById('view-leaderboard-button').addEventListener('click', async () => {
+    showOnlyManagementForm('leaderboard-section');
+    await loadLeaderboard(savedUser.user_id);
 });
 
 function toggleView(view_id) {
@@ -100,8 +105,6 @@ loginForm.addEventListener('submit', async (e) => {
         toggleView('login-view');
         toggleView('dashboard-view');
         showDashboard(user);
-        console.log("User from backend:", user);
-        console.log("Role:", user.role);
 
     } catch (err) {
         window.alert("Login failed");
@@ -238,7 +241,6 @@ document.getElementById("athlete-select").addEventListener("change", async funct
         const res = await fetch(`/api/athletePrograms/enrolled/${athleteId}`);
         if (!res.ok) return;
         const programs = await res.json();
-        console.log('Enrolled programs:', programs);
         enrolledSelect.innerHTML = '<option value="">Select an enrolled program</option>';
         programs.forEach(p => {
             const option = document.createElement('option');
@@ -631,7 +633,6 @@ async function loadAthletesInPrograms(trainer_id) {
     athletes.forEach(a => {
         const option = document.createElement('option');
         option.value = a.user_id;
-        console.log(option.value);
         option.textContent = a.first_name + " " + a.last_name;
         select.appendChild(option);
     });
@@ -639,7 +640,6 @@ async function loadAthletesInPrograms(trainer_id) {
 
 document.getElementById('athlete-feedback-select').addEventListener('change', async function () {
     const athleteId = this.value;
-    console.log('Selected athlete ID for feedback:', athleteId);
     const trainerId = savedUser.user_id;
     await loadWorkoutSessionsForAthlete(athleteId, trainerId);
 });
@@ -996,6 +996,82 @@ async function loadWorkoutSessionsForProgram(programId) {
     } catch (err) {
         console.error('Error loading workout sessions:', err);
         tbody.innerHTML = '<tr><td colspan="3">Error loading sessions</td></tr>';
+    }
+}
+
+async function loadLeaderboard(trainerId) {
+    const container = document.getElementById('leaderboard-container');
+    container.innerHTML = '<p>Loading...</p>';
+
+    try {
+        const response = await fetch(`/api/leaderboard/${trainerId}`);
+        const data = await response.json();
+
+        container.innerHTML = '';
+
+        if (data.length === 0) {
+            container.innerHTML = '<p>No leaderboard data available</p>';
+            return;
+        }
+
+        const programsMap = {};
+        data.forEach(row => {
+            const programId = row.program_id;
+            if (!programsMap[programId]) {
+                programsMap[programId] = {
+                    name: row.program_name,
+                    athletes: []
+                };
+            }
+            programsMap[programId].athletes.push(row);
+        });
+
+        Object.keys(programsMap).forEach(programId => {
+            const program = programsMap[programId];
+
+            const section = document.createElement('div');
+            section.className = 'leaderboard-program-section';
+
+            const title = document.createElement('h5');
+            title.textContent = program.name;
+            section.appendChild(title);
+
+            const tableContainer = document.createElement('div');
+            tableContainer.className = 'table-container';
+
+            const table = document.createElement('table');
+            table.className = 'leaderboard-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Athlete</th>
+                        <th>Sessions Logged</th>
+                        <th>Avg RPE</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = table.querySelector('tbody');
+            program.athletes.forEach(athlete => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${athlete.rnk}</td>
+                    <td>${athlete.athlete_name}</td>
+                    <td>${athlete.logged_sessions}</td>
+                    <td>${athlete.avg_rpe || 'N/A'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tableContainer.appendChild(table);
+            section.appendChild(tableContainer);
+            container.appendChild(section);
+        });
+    } catch (err) {
+        console.error('Failed to load leaderboard:', err);
+        container.innerHTML = '<p>Error loading leaderboard</p>';
     }
 }
 
