@@ -107,10 +107,23 @@
 
             <div id="content-enrollment" class="tab-content hidden">
                 <h3>Enrollment</h3>
-                <label>Enrolled Programs</label>
-                <select id="enrollment-programs">
-                    <option value="">No enrolled programs</option>
-                </select>
+                <div class="enrollment-section">
+                    <h4>Available Programs</h4>
+                    <label>Select a program to enroll</label>
+                    <select id="available-programs">
+                        <option value="">Select a program</option>
+                    </select>
+                    <button id="enroll-btn">Enroll in Program</button>
+                </div>
+
+                <div class="enrollment-section">
+                    <h4>My Enrolled Programs</h4>
+                    <label>Enrolled Programs</label>
+                    <select id="enrollment-programs">
+                        <option value="">No enrolled programs</option>
+                    </select>
+                </div>
+
                 <h3>Workout Sessions</h3>
                 <div class="table-container">
                     <table  id="workout-sessions-container">

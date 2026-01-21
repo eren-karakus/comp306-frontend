@@ -217,6 +217,7 @@ async function switchTab(tabId) {
 
     if (user.role == "athlete" && tabId === "enrollment") {
         await loadEnrolledPrograms(user.user_id);
+        await loadAvailablePrograms(user.user_id);
     }
 
 
@@ -879,44 +880,86 @@ async function loadEnrolledPrograms(athleteId) {
     }
 }
 
-async function loadWorkoutSessions(programId) {
-    const tbody = document.querySelector("#workout-sessions-container tbody");
+async function loadAvailablePrograms(athleteId) {
+    const select = document.getElementById('available-programs');
+    if (!select) return;
+    select.innerHTML = '<option value="">Loading...</option>';
 
-    tbody.innerHTML = "";
-
-    if (!programId) {
+    if (!athleteId) {
+        select.innerHTML = '<option value="">No athlete selected</option>';
         return;
     }
 
     try {
-        const res = await fetch(`/api/workoutSessions/${programId}`);
+        const res = await fetch(`/api/athletePrograms/notEnrolled/${athleteId}`);
         if (!res.ok) {
+            select.innerHTML = '<option value="">Failed to load</option>';
+            return;
+        }
+        const programs = await res.json();
+        if (!Array.isArray(programs) || programs.length === 0) {
+            select.innerHTML = '<option value="">No available programs</option>';
             return;
         }
 
-        const sessions = await res.json();
-        if (!Array.isArray(sessions) || sessions.length === 0) {
-            return;
-        }
-
-        sessions.forEach(s => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${s.session_date.split(":")[0].slice(0, -3)}</td>
-                <td>${s.duration}</td>
-            `;
-            tbody.appendChild(tr);
+        select.innerHTML = '<option value="">Select a program to enroll</option>';
+        programs.forEach(p => {
+            const id = p.program_id;
+            const name = p.program_name;
+            const start = p.start_date.split(":")[0].slice(0, -3);
+            const end = p.end_date.split(":")[0].slice(0, -3);
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${name}: (${start} - ${end})`;
+            select.appendChild(option);
         });
     } catch (err) {
         console.error(err);
+        select.innerHTML = '<option value="">Error loading programs</option>';
     }
 }
 
-// New: Listen for program selection in enrollment tab
-document.addEventListener('change', (e) => {
-    if (e.target && e.target.id === 'enrollment-programs') {
-        const programId = e.target.value;
-        loadWorkoutSessions(programId);
+async function enrollInProgram() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const programId = document.getElementById('available-programs').value;
+
+    if (!programId) {
+        window.alert('Please select a program to enroll.');
+        return;
     }
+
+    const payload = {
+        athlete_id: user.user_id,
+        program_id: programId
+    };
+
+    try {
+        const res = await fetch('/api/enrollAthlete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            window.alert(data.message || 'Successfully enrolled in program!');
+            
+            await loadEnrolledPrograms(user.user_id);
+            await loadAvailablePrograms(user.user_id);
+            
+            document.getElementById('available-programs').value = '';
+        } else {
+            const err = await res.json().catch(() => ({}));
+            window.alert(err.message || err.error || 'Failed to enroll in program.');
+        }
+    } catch (err) {
+        console.error(err);
+        window.alert('Network error while enrolling in program.');
+    }
+}
+
+document.getElementById('enroll-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await enrollInProgram();
 });
 

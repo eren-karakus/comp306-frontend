@@ -363,3 +363,30 @@ def add_workout_session(cursor):
     cursor.execute(sql, (program_id, session_date, duration, intensity))
     return jsonify({"message": "Workout session added successfully"}), 201
 
+@app.route("/api/enrollAthlete", methods=["POST"])
+@connect_first
+def enroll_athlete(cursor):
+    data = request.get_json()
+    athlete_id = data.get("athlete_id")
+    program_id = data.get("program_id")
+    
+    if not athlete_id or not program_id:
+        return jsonify({"error": "Missing athlete_id or program_id"}), 400
+    
+    # Check if already enrolled
+    cursor.execute("""
+        SELECT * FROM programenrollment
+        WHERE athlete_id = %s AND program_id = %s
+    """, (athlete_id, program_id))
+    
+    if cursor.fetchone():
+        return jsonify({"error": "Athlete already enrolled in this program"}), 400
+    
+    sql = """
+        INSERT INTO programenrollment
+        (athlete_id, program_id, enrollment_date, completion_status)
+        VALUES (%s, %s, NOW(), 'ongoing')
+    """
+    cursor.execute(sql, (athlete_id, program_id))
+    return jsonify({"message": "Successfully enrolled in program"}), 201
+
